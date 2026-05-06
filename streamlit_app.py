@@ -2,10 +2,9 @@
 from __future__ import annotations
 
 import sys
-import os
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(BASE_DIR, "src"))
+from pathlib import Path
+ROOT = Path(__file__).parent
+sys.path.append(str(ROOT / "src"))
 
 import streamlit as st
 import cv2

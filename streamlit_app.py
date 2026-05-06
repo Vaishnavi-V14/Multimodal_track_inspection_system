@@ -8,7 +8,7 @@ sys.path.append(os.path.abspath("src"))
 
 import streamlit as st
 import cv2
-from rail_inspection.alerts import something
+
 
 import base64
 import io

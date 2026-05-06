@@ -1,5 +1,10 @@
 from __future__ import annotations
 
+import sys
+import os
+
+sys.path.append(os.path.abspath("src"))
+
 import base64
 import io
 import json

@@ -1,4 +1,4 @@
-# Multimodal Track Inspection System (Industry-Style YOLO Pipeline)
+# Multimodal Track Inspection System (YOLO Pipeline)
 
 This project automatically:
 

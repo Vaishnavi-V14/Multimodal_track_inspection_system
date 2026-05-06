@@ -33,13 +33,13 @@ try:
 except Exception:
     option_menu = None
 
-from src.rail_inspection.alerts import (
+from rail_inspection.alerts import (
     load_alert_settings_from_streamlit_secrets,
     send_email_smtp,
     send_telegram_message,
 )
-from src.rail_inspection.inference import load_model, predict_image, read_image_bytes
-from src.rail_inspection.report_pdf import detections_to_pdf_bytes
+from rail_inspection.inference import load_model, predict_image, read_image_bytes
+from rail_inspection.report_pdf import detections_to_pdf_bytes
 
 SIREN_URL = "https://www.soundjay.com/misc/sounds/siren.wav"
 SIREN_FILE = Path("siren.wav")

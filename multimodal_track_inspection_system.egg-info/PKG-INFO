@@ -1,0 +1,134 @@
+Metadata-Version: 2.4
+Name: multimodal-track-inspection-system
+Version: 0.1.0
+Summary: Industry-style multimodal rail + audio YOLO training pipeline
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+
+# Multimodal Track Inspection System (Industry-Style YOLO Pipeline)
+
+This project automatically:
+
+1. Downloads a **real rail dataset** (auto by default) and **UrbanSound8K audio dataset**.
+2. Converts audio files into spectrogram images.
+3. Builds a combined YOLO dataset (`train/val/test`) for rail + audio modalities.
+4. Trains YOLO, validates, and evaluates on test split.
+
+## 1) Project Structure
+
+```text
+multimodal_track_inspection_system/
+  scripts/
+    run_pipeline.py
+  src/rail_inspection/
+    __init__.py
+    config.py
+    data_io.py
+    prepare_data.py
+    train.py
+    utils.py
+  dataset/
+    rail5k/                 # your local rail dataset (if already available)
+  data/
+    raw/                    # downloaded archives and extracted raw datasets
+    processed/yolo_multimodal/
+      images/{train,val,test}
+      labels/{train,val,test}
+      data.yaml
+  runs/train/               # YOLO training outputs
+  requirements.txt
+```
+
+## 2) Prerequisites (VS Code)
+
+- Python 3.10+ recommended
+- VS Code + Python extension
+- (Optional) NVIDIA GPU with proper CUDA setup
+
+## 3) Setup
+
+```bash
+python -m venv .venv
+```
+
+Windows PowerShell:
+
+```bash
+.venv\Scripts\Activate.ps1
+pip install --upgrade pip
+pip install -r requirements.txt
+pip install -e .
+```
+
+## 4) Rail Dataset Auto-Download
+
+By default, the pipeline auto-downloads a public rail dataset archive:
+
+- `Railway Track fault Detection Resized (224x224)` (direct S3 link)
+
+If you already have a local rail dataset, pass `--rail-local-dir`.
+
+## 5) Run Complete Pipeline
+
+```bash
+python scripts/run_pipeline.py --epochs 20 --imgsz 640 --batch 16 --device cpu
+```
+
+With your own rail source URL override:
+
+```bash
+python scripts/run_pipeline.py --rail-url "https://<your-rail-dataset-url>.zip" --rail-local-dir dataset/rail5k --epochs 20 --imgsz 640 --batch 16 --device 0
+```
+
+## 6) What Happens Internally
+
+- Rail images/labels are discovered recursively and split into `train/val/test`.
+- UrbanSound8K is downloaded from Zenodo and converted into spectrogram images.
+- Audio labels are generated as full-image bounding boxes.
+- Combined class mapping:
+  - `rail_class_*` first
+  - then audio classes (`air_conditioner`, `car_horn`, etc.)
+- YOLO model trains and evaluates on both validation and test sets.
+
+## 7) Key Outputs
+
+- Dataset config: `data/processed/yolo_multimodal/data.yaml`
+- Best model: `runs/train/<run-name>/weights/best.pt`
+- Metrics and plots: inside corresponding `runs/train/<run-name>/`
+
+## 8) Recommended Production Enhancements
+
+- Add MLflow/W&B experiment tracking
+- Add model registry and versioned dataset snapshots
+- Add CI for data-quality checks and smoke training
+- Add deployment API (FastAPI + ONNX/TensorRT export)
+- Add drift monitoring for rail camera and microphone streams
+
+## 9) Base YOLO checkpoint
+
+Training defaults use **`yolov26n.pt`** as the backbone weights. Place `yolov26n.pt` in the project root (or pass `--model path/to/yolov26n.pt`). Ultralytics will fetch compatible weights from the hub when supported.
+
+## 10) Streamlit Real-Time Detection Dashboard
+
+This project includes a Streamlit UI for:
+
+- Rail-focused preprocessing (CLAHE, bilateral denoise, optional sharpen)
+- Composite severity score (confidence + ROI texture + crack-shape cues)
+- Image/camera detection and **video frame-by-frame sweep** with stride controls
+- Live dashboard and severity analytics
+- Critical/warning alerts with optional **Telegram** and **SMTP email** notifications (cooldown throttled)
+- GPS map visualization for detections
+- Downloadable **CSV**, **JSON**, and **PDF** reports
+
+Run:
+
+```bash
+streamlit run streamlit_app.py
+```
+
+Optional secrets for alerts: copy `.streamlit/secrets.toml.example` to `.streamlit/secrets.toml` and fill values.
+
+Default model path used by the app:
+
+- `models/best_colab.pt`
+
